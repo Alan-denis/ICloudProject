@@ -1,0 +1,28 @@
+-- Create tables
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS books (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  author TEXT NOT NULL,
+  isbn TEXT UNIQUE NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS borrows (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) NOT NULL,
+  book_id UUID REFERENCES books(id) NOT NULL,
+  borrow_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  return_date TIMESTAMPTZ,
+  returned BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

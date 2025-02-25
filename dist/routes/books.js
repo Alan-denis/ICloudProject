@@ -10,10 +10,11 @@ const router = (0, express_1.Router)();
 router.get('/', auth_1.auth, async (req, res) => {
     try {
         const books = await storage_1.storage.getBooks();
-        res.json(books);
+        return res.json(books);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 // Get a single book
@@ -23,10 +24,11 @@ router.get('/:id', auth_1.auth, async (req, res) => {
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
-        res.json(book);
+        return res.json(book);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 // Add a new book
@@ -42,10 +44,11 @@ router.post('/', auth_1.auth, [
     }
     try {
         const book = await storage_1.storage.createBook(req.body);
-        res.status(201).json(book);
+        return res.status(201).json(book);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 // Update a book
@@ -64,10 +67,11 @@ router.put('/:id', auth_1.auth, [
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
-        res.json(book);
+        return res.json(book);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 exports.booksRouter = router;

@@ -10,7 +10,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const storage_1 = require("../lib/storage");
 const router = (0, express_1.Router)();
-const JWT_SECRET = 'your-secret-key'; // In production, this should be in environment variables
+const JWT_SECRET = 'your-secret-key'; // In production, use environment variables
 // Sign Up
 router.post('/signup', [
     (0, express_validator_1.body)('email').isEmail(),
@@ -31,13 +31,14 @@ router.post('/signup', [
         const user = await storage_1.storage.createUser({
             email,
             password: hashedPassword,
-            name
+            name,
         });
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, JWT_SECRET);
-        res.status(201).json({ user, token });
+        return res.status(201).json({ user, token });
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 // Sign In
@@ -56,10 +57,11 @@ router.post('/login', [
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, JWT_SECRET);
-        res.json({ user, token });
+        return res.json({ user, token });
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 exports.authRouter = router;

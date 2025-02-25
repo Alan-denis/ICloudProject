@@ -13,10 +13,11 @@ router.get('/profile', auth_1.auth, async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        return res.json(user);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 // Update user profile
@@ -33,10 +34,11 @@ router.put('/profile', auth_1.auth, [
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        return res.json(user);
     }
     catch (error) {
-        res.status(500).json({ error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 exports.usersRouter = router;

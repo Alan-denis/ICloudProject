@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { storage } from '../lib/storage';
 import { auth, AuthRequest } from '../middleware/auth';
@@ -6,15 +6,16 @@ import { auth, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 // Get user profile
-router.get('/profile', auth, async (req: AuthRequest, res) => {
+router.get('/profile', auth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = await storage.getUserById(req.user!.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    return res.json(user);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -26,7 +27,7 @@ router.put(
     body('name').optional(),
     body('phone').optional(),
   ],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: Response): Promise<Response> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -37,9 +38,10 @@ router.put(
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-      res.json(user);
+      return res.json(user);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      return res.status(500).json({ error: errorMessage });
     }
   }
 );

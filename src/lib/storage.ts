@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import db from './db';
 
 export interface User {
   id: string;
@@ -28,78 +29,91 @@ export interface Borrow {
   created_at: Date;
 }
 
-class LocalStorage {
-  private users: Map<string, User> = new Map();
-  private books: Map<string, Book> = new Map();
-  private borrows: Map<string, Borrow> = new Map();
-
+class PostgresStorage {
   // User methods
   async createUser(user: Omit<User, 'id' | 'created_at'>): Promise<User> {
-    const id = randomUUID();
-    const newUser = { ...user, id, created_at: new Date() };
-    this.users.set(id, newUser);
-    return newUser;
+    const result = await db.query(
+      'INSERT INTO users (email, password, name, phone) VALUES ($1, $2, $3, $4) RETURNING *',
+      [user.email, user.password, user.name, user.phone]
+    );
+    return result.rows[0];
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
-    return Array.from(this.users.values()).find(user => user.email === email) || null;
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return result.rows[0] || null;
   }
 
   async getUserById(id: string): Promise<User | null> {
-    return this.users.get(id) || null;
+    const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0] || null;
   }
 
   async updateUser(id: string, data: Partial<User>): Promise<User | null> {
-    const user = this.users.get(id);
-    if (!user) return null;
-    const updatedUser = { ...user, ...data };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = Object.values(data);
+    
+    const result = await db.query(
+      `UPDATE users SET ${fields} WHERE id = $1 RETURNING *`,
+      [id, ...values]
+    );
+    return result.rows[0] || null;
   }
 
   // Book methods
   async createBook(book: Omit<Book, 'id' | 'created_at'>): Promise<Book> {
-    const id = randomUUID();
-    const newBook = { ...book, id, created_at: new Date() };
-    this.books.set(id, newBook);
-    return newBook;
+    const result = await db.query(
+      'INSERT INTO books (title, author, isbn, quantity) VALUES ($1, $2, $3, $4) RETURNING *',
+      [book.title, book.author, book.isbn, book.quantity]
+    );
+    return result.rows[0];
   }
 
   async getBooks(): Promise<Book[]> {
-    return Array.from(this.books.values());
+    const result = await db.query('SELECT * FROM books');
+    return result.rows;
   }
 
   async getBookById(id: string): Promise<Book | null> {
-    return this.books.get(id) || null;
+    const result = await db.query('SELECT * FROM books WHERE id = $1', [id]);
+    return result.rows[0] || null;
   }
 
   async updateBook(id: string, data: Partial<Book>): Promise<Book | null> {
-    const book = this.books.get(id);
-    if (!book) return null;
-    const updatedBook = { ...book, ...data };
-    this.books.set(id, updatedBook);
-    return updatedBook;
+    const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = Object.values(data);
+    
+    const result = await db.query(
+      `UPDATE books SET ${fields} WHERE id = $1 RETURNING *`,
+      [id, ...values]
+    );
+    return result.rows[0] || null;
   }
 
   // Borrow methods
   async createBorrow(borrow: Omit<Borrow, 'id' | 'created_at'>): Promise<Borrow> {
-    const id = randomUUID();
-    const newBorrow = { ...borrow, id, created_at: new Date() };
-    this.borrows.set(id, newBorrow);
-    return newBorrow;
+    const result = await db.query(
+      'INSERT INTO borrows (user_id, book_id, borrow_date, return_date, returned) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [borrow.user_id, borrow.book_id, borrow.borrow_date, borrow.return_date, borrow.returned]
+    );
+    return result.rows[0];
   }
 
   async getUserBorrows(userId: string): Promise<Borrow[]> {
-    return Array.from(this.borrows.values()).filter(borrow => borrow.user_id === userId);
+    const result = await db.query('SELECT * FROM borrows WHERE user_id = $1', [userId]);
+    return result.rows;
   }
 
   async updateBorrow(id: string, data: Partial<Borrow>): Promise<Borrow | null> {
-    const borrow = this.borrows.get(id);
-    if (!borrow) return null;
-    const updatedBorrow = { ...borrow, ...data };
-    this.borrows.set(id, updatedBorrow);
-    return updatedBorrow;
+    const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = Object.values(data);
+    
+    const result = await db.query(
+      `UPDATE borrows SET ${fields} WHERE id = $1 RETURNING *`,
+      [id, ...values]
+    );
+    return result.rows[0] || null;
   }
 }
 
-export const storage = new LocalStorage();
+export const storage = new PostgresStorage();

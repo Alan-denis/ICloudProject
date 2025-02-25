@@ -1,72 +1,63 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.storage = void 0;
-const crypto_1 = require("crypto");
-class LocalStorage {
-    constructor() {
-        this.users = new Map();
-        this.books = new Map();
-        this.borrows = new Map();
-    }
+const db_1 = __importDefault(require("./db"));
+class PostgresStorage {
     // User methods
     async createUser(user) {
-        const id = (0, crypto_1.randomUUID)();
-        const newUser = { ...user, id, created_at: new Date() };
-        this.users.set(id, newUser);
-        return newUser;
+        const result = await db_1.default.query('INSERT INTO users (email, password, name, phone) VALUES ($1, $2, $3, $4) RETURNING *', [user.email, user.password, user.name, user.phone]);
+        return result.rows[0];
     }
     async getUserByEmail(email) {
-        return Array.from(this.users.values()).find(user => user.email === email) || null;
+        const result = await db_1.default.query('SELECT * FROM users WHERE email = $1', [email]);
+        return result.rows[0] || null;
     }
     async getUserById(id) {
-        return this.users.get(id) || null;
+        const result = await db_1.default.query('SELECT * FROM users WHERE id = $1', [id]);
+        return result.rows[0] || null;
     }
     async updateUser(id, data) {
-        const user = this.users.get(id);
-        if (!user)
-            return null;
-        const updatedUser = { ...user, ...data };
-        this.users.set(id, updatedUser);
-        return updatedUser;
+        const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+        const values = Object.values(data);
+        const result = await db_1.default.query(`UPDATE users SET ${fields} WHERE id = $1 RETURNING *`, [id, ...values]);
+        return result.rows[0] || null;
     }
     // Book methods
     async createBook(book) {
-        const id = (0, crypto_1.randomUUID)();
-        const newBook = { ...book, id, created_at: new Date() };
-        this.books.set(id, newBook);
-        return newBook;
+        const result = await db_1.default.query('INSERT INTO books (title, author, isbn, quantity) VALUES ($1, $2, $3, $4) RETURNING *', [book.title, book.author, book.isbn, book.quantity]);
+        return result.rows[0];
     }
     async getBooks() {
-        return Array.from(this.books.values());
+        const result = await db_1.default.query('SELECT * FROM books');
+        return result.rows;
     }
     async getBookById(id) {
-        return this.books.get(id) || null;
+        const result = await db_1.default.query('SELECT * FROM books WHERE id = $1', [id]);
+        return result.rows[0] || null;
     }
     async updateBook(id, data) {
-        const book = this.books.get(id);
-        if (!book)
-            return null;
-        const updatedBook = { ...book, ...data };
-        this.books.set(id, updatedBook);
-        return updatedBook;
+        const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+        const values = Object.values(data);
+        const result = await db_1.default.query(`UPDATE books SET ${fields} WHERE id = $1 RETURNING *`, [id, ...values]);
+        return result.rows[0] || null;
     }
     // Borrow methods
     async createBorrow(borrow) {
-        const id = (0, crypto_1.randomUUID)();
-        const newBorrow = { ...borrow, id, created_at: new Date() };
-        this.borrows.set(id, newBorrow);
-        return newBorrow;
+        const result = await db_1.default.query('INSERT INTO borrows (user_id, book_id, borrow_date, return_date, returned) VALUES ($1, $2, $3, $4, $5) RETURNING *', [borrow.user_id, borrow.book_id, borrow.borrow_date, borrow.return_date, borrow.returned]);
+        return result.rows[0];
     }
     async getUserBorrows(userId) {
-        return Array.from(this.borrows.values()).filter(borrow => borrow.user_id === userId);
+        const result = await db_1.default.query('SELECT * FROM borrows WHERE user_id = $1', [userId]);
+        return result.rows;
     }
     async updateBorrow(id, data) {
-        const borrow = this.borrows.get(id);
-        if (!borrow)
-            return null;
-        const updatedBorrow = { ...borrow, ...data };
-        this.borrows.set(id, updatedBorrow);
-        return updatedBorrow;
+        const fields = Object.keys(data).map((key, i) => `${key} = $${i + 2}`).join(', ');
+        const values = Object.values(data);
+        const result = await db_1.default.query(`UPDATE borrows SET ${fields} WHERE id = $1 RETURNING *`, [id, ...values]);
+        return result.rows[0] || null;
     }
 }
-exports.storage = new LocalStorage();
+exports.storage = new PostgresStorage();

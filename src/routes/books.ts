@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { storage } from '../lib/storage';
 import { auth, AuthRequest } from '../middleware/auth';
@@ -6,25 +6,27 @@ import { auth, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 // Get all books
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: Request, res: Response): Promise<Response> => {
   try {
     const books = await storage.getBooks();
-    res.json(books);
+    return res.json(books);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return res.status(500).json({ error: errorMessage });
   }
 });
 
 // Get a single book
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req: Request, res: Response): Promise<Response> => {
   try {
     const book = await storage.getBookById(req.params.id);
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
     }
-    res.json(book);
+    return res.json(book);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -38,7 +40,7 @@ router.post(
     body('isbn').notEmpty(),
     body('quantity').isInt({ min: 0 }),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response): Promise<Response> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -46,9 +48,10 @@ router.post(
 
     try {
       const book = await storage.createBook(req.body);
-      res.status(201).json(book);
+      return res.status(201).json(book);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      return res.status(500).json({ error: errorMessage });
     }
   }
 );
@@ -63,7 +66,7 @@ router.put(
     body('isbn').optional(),
     body('quantity').optional().isInt({ min: 0 }),
   ],
-  async (req, res) => {
+  async (req: Request, res: Response): Promise<Response> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -74,9 +77,10 @@ router.put(
       if (!book) {
         return res.status(404).json({ message: 'Book not found' });
       }
-      res.json(book);
+      return res.json(book);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      return res.status(500).json({ error: errorMessage });
     }
   }
 );

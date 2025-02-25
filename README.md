@@ -1,5 +1,3 @@
 # setup
 
-    npm install
-    npm run build
-    npm start
+    docker-compose up --build
