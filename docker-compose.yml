@@ -8,21 +8,22 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=production
-      - POSTGRES_HOST=container
+      - POSTGRES_HOST=data-container
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=data
+      - POSTGRES_DB=database
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     depends_on:
-      - database
+      - db
     restart: unless-stopped
 
-  database:
+  db:
+    container_name: data-container
     image: postgres:16-alpine
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=data
+      - POSTGRES_DB=database
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     volumes:

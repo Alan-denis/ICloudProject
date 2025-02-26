@@ -22,5 +22,5 @@ app.use('/books', booksRouter);
 app.use('/users', usersRouter);
 
 app.listen(port, () => {
-  console.log(`i-cloud Management System running on port ${port}`);
+  console.log(`Library Management System running on port ${port}`);
 });

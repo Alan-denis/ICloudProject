@@ -1,5 +1,5 @@
 {
-  "name": "i-cloud-management-system",
+  "name": "library-management-system",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "i-cloud-management-system": "file:",
+    "library-management-system": "file:",
     "pg": "^8.11.3",
     "pg-pool": "^3.6.1"
   },
