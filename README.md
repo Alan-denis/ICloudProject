@@ -1,11 +1,3 @@
-# setup
+# DockerHub image
 
-    docker-compose up --build
-
-
-# push the image to docker hub
-
-    docker login
-    docker-compose build
-    docker push
-    
+link : https://hub.docker.com/repository/docker/louttre1001/icloudproject/general
